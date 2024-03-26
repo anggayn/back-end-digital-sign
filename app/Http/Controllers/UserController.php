@@ -1,107 +1,132 @@
 <?php
- 
+
 namespace App\Http\Controllers;
- 
+
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Http\Requests\UserStoreRequest;
- 
+use Illuminate\Support\Facades\Storage;
+
 class UserController extends Controller
 {
     public function index()
     {
-       $users = User::all(); 
+        $users = User::all();
           
-       // Return Json Response
-       return response()->json([
+        // Return JSON Response
+        return response()->json([
             'results' => $users
-       ],200);
+        ], 200);
     }
    
     public function store(UserStoreRequest $request)
     {
         try {
-            // Create User
+            if ($request->hasFile('foto')) {
+                $fotoPath = $request->file('foto')->store('public/image/foto');
+            } else {
+                throw new \Exception("Foto file not found in the request.");
+            }
+            if ($request->hasFile('ttd')) {
+                $ttdPath = $request->file('ttd')->store('public/image/ttd');
+            } else {
+                throw new \Exception("Ttd file not found in the request.");
+            }
+
             User::create([
                 'name' => $request->name,
                 'email' => $request->email,
-                'password' => $request->password
+                'password' => $request->password, 
+                'no_tlfn' => $request->no_tlfn,
+                'alamat' => $request->alamat,
+                'foto' => $fotoPath,
+                'ttd' => $ttdPath,
             ]);
- 
-            // Return Json Response
+
             return response()->json([
                 'message' => "User successfully created."
-            ],200);
+            ], 200);
         } catch (\Exception $e) {
-            // Return Json Response
             return response()->json([
-                'message' => "Something went really wrong!"
-            ],500);
+                'message' => $e->getMessage()
+            ], 500);
         }
     }
    
     public function show($id)
     {
-       // User Detail 
-       $users = User::find($id);
-       if(!$users){
-         return response()->json([
-            'message'=>'User Not Found.'
-         ],404);
-       }
+        // User Detail 
+        $user = User::find($id);
+        if (!$user) {
+            return response()->json([
+                'message' => 'User Not Found.'
+            ], 404);
+        }
        
-       // Return Json Response
-       return response()->json([
-          'users' => $users
-       ],200);
+        // Return JSON Response
+        return response()->json([
+            'user' => $user
+        ], 200);
     }
    
     public function update(UserStoreRequest $request, $id)
     {
         try {
-            // Find User
-            $users = User::find($id);
-            if(!$users){
-              return users()->json([
-                'message'=>'User Not Found.'
-              ],404);
+            $user = User::find($id);
+            if (!$user) {
+                return response()->json([
+                    'message' => 'User Not Found.'
+                ], 404);
             }
        
-            //echo "request : $request->image";
-            $users->name = $request->name;
-            $users->email = $request->email;
-       
+            // Update atribut user
+            $user->name = $request->name;
+            $user->email = $request->email;
+            $user->password = $request->password;
+            $user->no_tlfn = $request->no_tlfn;
+            $user->alamat = $request->alamat;
+
+            // Simpan foto jika ada perubahan
+            if ($request->hasFile('foto')) {
+                $fotoPath = $request->file('foto')->store('public/image/foto');
+                $user->foto = $fotoPath; // Simpan path foto
+            }
+
+            // Simpan ttd jika ada perubahan
+            if ($request->hasFile('ttd')) {
+                $ttdPath = $request->file('ttd')->store('public/image/ttd');
+                $user->ttd = $ttdPath; // Simpan path ttd
+            }
+
             // Update User
-            $users->save();
-       
-            // Return Json Response
+            $user->save();
+
             return response()->json([
                 'message' => "User successfully updated."
-            ],200);
+            ], 200);
         } catch (\Exception $e) {
-            // Return Json Response
             return response()->json([
                 'message' => "Something went really wrong!"
-            ],500);
+            ], 500);
         }
     }
    
     public function destroy($id)
     {
         // Detail 
-        $users = User::find($id);
-        if(!$users){
-          return response()->json([
-             'message'=>'User Not Found.'
-          ],404);
+        $user = User::find($id);
+        if (!$user) {
+            return response()->json([
+                'message' => 'User Not Found.'
+            ], 404);
         }
          
         // Delete User
-        $users->delete();
+        $user->delete();
        
-        // Return Json Response
+        // Return JSON Response
         return response()->json([
             'message' => "User successfully deleted."
-        ],200);
+        ], 200);
     }
 }
