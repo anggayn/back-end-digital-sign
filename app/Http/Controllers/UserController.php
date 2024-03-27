@@ -27,11 +27,6 @@ class UserController extends Controller
             } else {
                 throw new \Exception("Foto file not found in the request.");
             }
-            if ($request->hasFile('ttd')) {
-                $ttdPath = $request->file('ttd')->store('public/image/ttd');
-            } else {
-                throw new \Exception("Ttd file not found in the request.");
-            }
 
             User::create([
                 'name' => $request->name,
@@ -40,7 +35,6 @@ class UserController extends Controller
                 'no_tlfn' => $request->no_tlfn,
                 'alamat' => $request->alamat,
                 'foto' => $fotoPath,
-                'ttd' => $ttdPath,
             ]);
 
             return response()->json([
@@ -70,46 +64,42 @@ class UserController extends Controller
     }
    
     public function update(UserStoreRequest $request, $id)
-    {
-        try {
-            $user = User::find($id);
-            if (!$user) {
-                return response()->json([
-                    'message' => 'User Not Found.'
-                ], 404);
-            }
-       
-            // Update atribut user
-            $user->name = $request->name;
-            $user->email = $request->email;
-            $user->password = $request->password;
-            $user->no_tlfn = $request->no_tlfn;
-            $user->alamat = $request->alamat;
-
-            // Simpan foto jika ada perubahan
-            if ($request->hasFile('foto')) {
-                $fotoPath = $request->file('foto')->store('public/image/foto');
-                $user->foto = $fotoPath; // Simpan path foto
-            }
-
-            // Simpan ttd jika ada perubahan
-            if ($request->hasFile('ttd')) {
-                $ttdPath = $request->file('ttd')->store('public/image/ttd');
-                $user->ttd = $ttdPath; // Simpan path ttd
-            }
-
-            // Update User
-            $user->save();
-
+{
+    try {
+        $user = User::find($id);
+        if (!$user) {
             return response()->json([
-                'message' => "User successfully updated."
-            ], 200);
-        } catch (\Exception $e) {
-            return response()->json([
-                'message' => "Something went really wrong!"
-            ], 500);
+                'message' => 'Pengguna tidak ditemukan.'
+            ], 404);
         }
+   
+        // Perbarui atribut pengguna
+        $user->name = $request->name;
+        $user->email = $request->email;
+        $user->password = $request->password;
+        $user->no_tlfn = $request->no_tlfn;
+        $user->alamat = $request->alamat;
+
+        // Periksa apakah ada file baru untuk 'foto'
+        if ($request->hasFile('foto')) {
+            // Jika ada file baru, simpan dan perbarui atribut 'foto'
+            $fotoPath = $request->file('foto')->store('public/image/foto');
+            $user->foto = $fotoPath; 
+        }
+
+        // Simpan pengguna terlepas dari apakah 'foto' telah berubah
+        $user->save();
+
+        return response()->json([
+            'message' => "Pengguna berhasil diperbarui."
+        ], 200);
+    } catch (\Exception $e) {
+        return response()->json([
+            'message' => "Terjadi kesalahan!"
+        ], 500);
     }
+}
+
    
     public function destroy($id)
     {

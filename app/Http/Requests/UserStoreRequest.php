@@ -29,7 +29,7 @@ class UserStoreRequest extends FormRequest
                 'password' => 'required|string',
                 'no_tlfn' => 'string',
                 'alamat' => 'string',
-                // 'foto' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
+                'foto' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
                 // 'ttd' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
             ];
         } else {
@@ -39,7 +39,7 @@ class UserStoreRequest extends FormRequest
                 'password' => 'required|string',
                 'no_tlfn' => 'string',
                 'alamat' => 'string',
-                // 'foto' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
+                'foto' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
                 // 'ttd' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
             ];
         }
@@ -52,9 +52,9 @@ class UserStoreRequest extends FormRequest
                 'name.required' => 'Name is required!',
                 'email.required' => 'Email is required!',
                 'password.required' => 'Password is required!',
-                // 'foto.image' => 'Foto must be an image.',
-                // 'foto.mimes' => 'Foto must be a file of type: jpeg, png, jpg, gif.',
-                // 'foto.max' => 'Foto may not be greater than 2048 kilobytes.',
+                'foto.image' => 'Foto must be an image.',
+                'foto.mimes' => 'Foto must be a file of type: jpeg, png, jpg, gif.',
+                'foto.max' => 'Foto may not be greater than 2048 kilobytes.',
                 // 'ttd.image' => 'TTD must be an image.',
                 // 'ttd.mimes' => 'TTD must be a file of type: jpeg, png, jpg, gif.',
                 // 'ttd.max' => 'TTD may not be greater than 2048 kilobytes.'
@@ -64,9 +64,9 @@ class UserStoreRequest extends FormRequest
                 'name.required' => 'Name is required!',
                 'email.required' => 'Email is required!',
                 'password.required' => 'Password is required!',
-                // 'foto.image' => 'Foto must be an image.',
-                // 'foto.mimes' => 'Foto must be a file of type: jpeg, png, jpg, gif.',
-                // 'foto.max' => 'Foto may not be greater than 2048 kilobytes.',
+                'foto.image' => 'Foto must be an image.',
+                'foto.mimes' => 'Foto must be a file of type: jpeg, png, jpg, gif.',
+                'foto.max' => 'Foto may not be greater than 2048 kilobytes.',
                 // 'ttd.image' => 'TTD must be an image.',
                 // 'ttd.mimes' => 'TTD must be a file of type: jpeg, png, jpg, gif.',
                 // 'ttd.max' => 'TTD may not be greater than 2048 kilobytes.'
