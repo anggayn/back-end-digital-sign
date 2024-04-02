@@ -1,4 +1,5 @@
 <?php
+use App\Http\Controllers\FileController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
@@ -20,8 +21,11 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 Route::group(['middleware' => 'api','prefix' => 'auth'], function ($router) {
+    Route::get('users', [UserController::class, 'index']);
     Route::post('/login', [AuthController::class, 'login']);
     Route::post('/register', [AuthController::class, 'register']);
+    Route::put('/update/{id}', [AuthController::class, 'update']); 
+    Route::delete('/delete/{id}', [AuthController::class, 'destroy']);
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::post('/refresh', [AuthController::class, 'refresh']);
     Route::get('/user-profile', [AuthController::class, 'userProfile']);    
@@ -30,5 +34,12 @@ Route::group(['middleware' => 'api','prefix' => 'auth'], function ($router) {
 Route::get('users', [UserController::class, 'index']);
 Route::get('users/{id}', [UserController::class, 'show']); 
 Route::post('addnew', [UserController::class, 'store']); 
-Route::put('usersupdate/{id}', [UserController::class, 'update']);
+Route::put('usersupdate/{id}', [UserController::class, 'update']); 
 Route::delete('usersdelete/{id}', [UserController::class, 'destroy']);
+
+
+
+Route::post('/files', [FileController::class, 'fileUpload']);
+Route::put('/files/{id}', [FileController::class, 'update']);
+Route::delete('/files/{id}', [FileController::class, 'delete']);
+Route::get('/files/{id}', [FileController::class, 'show']);
