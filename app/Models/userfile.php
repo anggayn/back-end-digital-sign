@@ -9,9 +9,11 @@ class UserFile extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'email', 'tgl', 'file_path'];
+    protected $primaryKey = 'id_document';
+    protected $fillable = ['title', 'tgl', 'deskripsi', 'file_path'];
+    
 
-    // Relationship dengan model User
+
     public function user()
     {
         return $this->belongsTo(User::class);

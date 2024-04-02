@@ -12,10 +12,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('user_files', function (Blueprint $table) {
-            $table->id();
-            $table->string('name')->nullable();
-            $table->string('email')->nullable();
+            $table->id('id_document');
+            $table->string('title')->nullable();
             $table->date('tgl')->nullable();
+            $table->string('deskripsi')->nullable();
             $table->string('file_path')->nullable();
             $table->timestamps();
         });

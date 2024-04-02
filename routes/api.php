@@ -41,5 +41,5 @@ Route::delete('usersdelete/{id}', [UserController::class, 'destroy']);
 
 Route::post('/files', [FileController::class, 'fileUpload']);
 Route::put('/files/{id}', [FileController::class, 'update']);
-Route::delete('/files/{id}', [FileController::class, 'delete']);
-Route::get('/files/{id}', [FileController::class, 'show']);
+Route::delete('/filesdelete/{id}', [FileController::class, 'delete']);
+Route::get('/filesget/{id}', [FileController::class, 'show']);
