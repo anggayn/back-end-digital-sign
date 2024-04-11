@@ -37,9 +37,8 @@ Route::post('addnew', [UserController::class, 'store']);
 Route::put('usersupdate/{id}', [UserController::class, 'update']); 
 Route::delete('usersdelete/{id}', [UserController::class, 'destroy']);
 
-
-
-Route::post('/files', [FileController::class, 'fileUpload']);
+Route::get('files', [FileController::class, 'index']);
+Route::get('/files/{id}', [FileController::class, 'show']);
+Route::post('/files', [FileController::class, 'store']);
 Route::put('/files/{id}', [FileController::class, 'update']);
 Route::delete('/filesdelete/{id}', [FileController::class, 'delete']);
-Route::get('/filesget/{id}', [FileController::class, 'show']);
