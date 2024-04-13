@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\User;
 use App\Http\Requests\UserStoreRequest;
+use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Validator;
+
 
 class UserController extends Controller
 {
@@ -23,32 +23,35 @@ class UserController extends Controller
     public function store(UserStoreRequest $request)
     {
         try {
-            if ($request->hasFile('foto')) {
-                $fotoPath = $request->file('foto')->store('public/image/foto');
-            } else {
-                throw new \Exception("Foto file not found in the request.");
-            }
-
+            $fotoPath = Str::random(32).".".$request->foto->getClientOriginalExtension();
+      
+            // Buat Pengguna
             User::create([
                 'name' => $request->name,
                 'email' => $request->email,
-                'password' => $request->password, 
+                'password' => bcrypt($request->password),
                 'no_tlfn' => $request->no_tlfn,
                 'alamat' => $request->alamat,
                 'foto' => $fotoPath,
             ]);
+      
+            // Save Image in Storage folder
+            Storage::disk('public')->put($fotoPath, file_get_contents($request->foto));
 
+            // Return JSON Response
             return response()->json([
-                'message' => "User successfully created."
-            ], 200);
+                'message' => "Pengguna berhasil dibuat."
+            ],200);
         } catch (\Exception $e) {
+            // Return JSON Response
             return response()->json([
-                'message' => $e->getMessage()
-            ], 500);
+                'message' => "Terjadi kesalahan saat membuat pengguna."
+            ],500);
         }
     }
+  
    
-    public function update(Request $request, $id)
+    public function update(UserStoreRequest $request, $id)
     {
         try {
             $user = User::find($id);
@@ -58,62 +61,43 @@ class UserController extends Controller
                 ], 404);
             }
     
-            $validator = Validator::make($request->all(), [
-                'name' => 'string|between:2,100',
-                'email' => 'string|email|max:100|unique:users,email,'.$id,
-                'password' => 'nullable|string|confirmed|min:6',
-                'no_tlfn' => 'nullable|string|max:20',
-                'alamat' => 'nullable|string|max:255',
-                'foto' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            ]);
-    
-            if ($validator->fails()) {
-                return response()->json(['errors' => $validator->errors()], 422);
-            }
-    
-            $validatedData = $validator->validated();
-    
-            if (isset($validatedData['password'])) {
-                $user->password = bcrypt($validatedData['password']);
-            }
-    
-            if (isset($validatedData['name'])) {
-                $user->name = $validatedData['name'];
-            }
-    
-            if (isset($validatedData['email'])) {
-                $user->email = $validatedData['email'];
-            }
-    
-            if (isset($validatedData['no_tlfn'])) {
-                $user->no_tlfn = $validatedData['no_tlfn'];
-            }
-    
-            if (isset($validatedData['alamat'])) {
-                $user->alamat = $validatedData['alamat'];
-            }
-    
-            if ($request->hasFile('foto')) {
-                if ($user->foto) {
-                    Storage::delete($user->foto);
-                }
-    
-                $fotoPath = $request->file('foto')->store('public/image/foto');
-                $user->foto = $fotoPath;
-            }
-    
-            $user->save();
-    
-            return response()->json([
-                'message' => "User successfully updated."
-            ], 200);
-        } catch (\Exception $e) {
-            return response()->json([
-                'message' => "An error occurred while updating user."
-            ], 500);
-        }
-    }
-    
+         $user->name = $request->name;
+         $user->email = $request->email;
+         $user->password = $request->password;
+         $user->no_tlfn = $request->no_tlfn;
+         $user->alamat = $request->alamat;
+
+         if($request->foto) {
+
+              // Public storage
+              $storage = Storage::disk('public');
+
+               // Old foto delete
+               if($storage->exists($user->foto))
+               $storage->delete($user->foto);
+
+               // fotopath
+               $fotoPath = Str::random(32).".".$request->foto->getClientOriginalExtension();
+               $user->foto = $fotoPath;
+
+                // Image save in public folder
+                $storage->put($fotoPath, file_get_contents($request->foto));
+         }
+
+                // Update Product
+                 $user->save();
+      
+                // Return Json Response
+                return response()->json([
+                'message' => "user successfully updated."
+                ],200);
+              } catch (\Exception $e) {
+                  // Return Json Response
+                 return response()->json([
+                'message' => "Something went really wrong!"
+                 ],500);
+         }
+  }
 
     public function show($id)
     {

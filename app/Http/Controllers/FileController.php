@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Http\Requests\FileStoreRequest;
 use App\Models\Document;
+use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
 
 class FileController extends Controller
@@ -17,71 +19,80 @@ class FileController extends Controller
         ], 200);
     }
 
-    public function store(Request $req)
-    {
-        $req->validate([
-            'file' => 'required|mimes:csv,txt,xlsx,xls,pdf|max:2048',
-            'title' => 'required|string',
-            'tgl' => 'string',
-            'deskripsi' => 'required|string',
+    public function store(FileStoreRequest $request)
+{
+    try {
+        $filePath = Str::random(32) . "." . $request->file('file')->getClientOriginalExtension();
+  
+        // Buat Dokumen
+        Document::create([
+            'title' => $request->title,
+            'tgl' => $request->tgl,
+            'deskripsi' => $request->deskripsi,
+            'file' => $filePath,
         ]);
-
-        try {
-            if ($req->file()) {
-                $fileName = time() . '_' . $req->file->getClientOriginalName();
-                $filePath = $req->file('file')->storeAs('public/documents', $fileName);
-
-                $Document = new Document;
-                $Document->title = $req->title;
-                $Document->tgl = $req->tgl;
-                $Document->deskripsi = $req->deskripsi;
-                $Document->file = $filePath;
-                $Document->save();
-
-                return response()->json([
-                    'message' => 'File has been uploaded.',
-                    'file' => $Document
-                ], 200);
-            }
-        } catch (\Exception $e) {
-            return response()->json([
-                'message' => $e->getMessage()
-            ], 500);
-        }
+  
+        // Simpan File di Folder Storage
+        Storage::disk('public')->put($filePath, file_get_contents($request->file('file')));
+  
+        // Return JSON Response
+        return response()->json([
+            'message' => "Dokumen berhasil dibuat."
+        ],200);
+    } catch (\Exception $e) {
+        // Return JSON Response
+        return response()->json([
+            'message' => "Terjadi kesalahan saat membuat dokumen."
+        ],500);
     }
+}
 
-    public function update(Request $request, $id)
-    {
-        try {
-            $Document = Document::findOrFail($id);
 
-            $Document->title = $request->input('title');
-            $Document->tgl = $request->input('tgl');
-            $Document->deskripsi = $request->input('deskripsi');
-
-            if ($request->hasFile('file')) {
-                Storage::delete('public/documents/' . $Document->file_path);
-
-                // Unggah file yang baru
-                $fileName = time() . '_' . $request->file('file')->getClientOriginalName();
-                $filePath = $request->file('file')->storeAs('public/documents', $fileName);
-
-                // Perbarui file_path dengan yang baru
-                $Document->file = $filePath;
-            }
-
-            // Simpan perubahan
-            $Document->save();
-
+public function update(FileStoreRequest $request, $id)
+{
+    try {
+        $user = Document::find($id);
+        if (!$user) {
             return response()->json([
-                'message' => "Document berhasil diperbarui."
-            ], 200);
-        } catch (\Exception $e) {
-            return response()->json([
-                'message' => $e->getMessage()
-            ], 500);
+                'message' => 'User not found.'
+            ], 404);
         }
+
+        $user->title = $request->title;
+        $user->tgl = $request->tgl;
+        $user->deskripsi = $request->deskripsi;
+
+        if($request->file) {
+
+            // Public storage
+            $storage = Storage::disk('public');
+
+            // Old file delete
+            if($storage->exists($user->file))
+                $storage->delete($user->file);
+
+            // File path
+            $filePath =Str::random(32).".".$request->file->getClientOriginalExtension();
+            $user->file = $filePath;
+
+            // File save in public folder
+            $storage->put($filePath, file_get_contents($request->file));
+        }
+
+        // Update User
+        $user->save();
+
+        // Return Json Response
+        return response()->json([
+            'message' => "User successfully updated."
+        ],200);
+    } catch (\Exception $e) {
+        // Return Json Response
+        return response()->json([
+            'message' => "Something went really wrong!"
+        ],500);
     }
+}
 
     public function show($id)
     {
